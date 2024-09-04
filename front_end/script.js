@@ -36,6 +36,15 @@ startButton.addEventListener('click', async () => {
             stopButton.disabled = false;
         });
 
+        socket.onmessage = (event) => {
+            // 播放接收到的音频数据
+            const audioBlob = new Blob([event.data], { type: 'audio/webm' });
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            audio.play();
+            statusDiv.textContent = '音频播放完毕';
+        };
+
         socket.addEventListener('error', error => {
             console.error('WebSocket 错误:', error);
             statusDiv.textContent = '服务器连接错误，请检查服务器是否运行。';

@@ -1,9 +1,6 @@
-// server.js
-
 const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
-const { Writable } = require('stream');
 const { spawn } = require('child_process');
 
 const PORT = 8080;
@@ -26,14 +23,23 @@ wss.on('connection', ws => {
     }
 
     const fileStream = fs.createWriteStream(filePath);
+    let audioData = Buffer.alloc(0); // 用于缓存音频数据
 
     ws.on('message', message => {
         fileStream.write(message);
+        // 将数据追加到缓存中
+        audioData = Buffer.concat([audioData, message]);
     });
-
+    // 在 10 秒后发送音频数据
+    setTimeout(() => {
+        ws.send(audioData); // 发送音频数据到前端
+        console.log('音频数据已发送到前端');
+    }, 10000); // 10 秒后触发
     ws.on('close', () => {
         fileStream.end();
         console.log(`客户端已断开，音频保存为：${fileName}`);
+
+
 
         // 可选：将 webm 格式转换为 mp3
         convertWebMToMP3(filePath);
