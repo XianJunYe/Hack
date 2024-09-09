@@ -4,6 +4,7 @@ import numpy as np
 import soundfile
 from ppasr.infer_utils.vad_predictor import VADPredictor
 
+
 async def audio_handler(websocket, path):
     if path == "/":  # 检查请求的路径
         print("Connection established")
@@ -18,7 +19,9 @@ async def audio_handler(websocket, path):
     if path == "/audio":
         await send_wav(websocket, path)
 
+
 async def process_audio():
+    print("Processing audio")
     vad = VADPredictor()
 
     try:
@@ -31,6 +34,7 @@ async def process_audio():
     except Exception as e:
         print(f"Failed to process audio: {e}")
 
+
 async def send_wav(websocket, path):
     # 打开 WAV 文件
     with open('output.wav', 'rb') as wav_file:
@@ -42,13 +46,11 @@ async def send_wav(websocket, path):
             await websocket.send(data)  # 通过 WebSocket 发送数据
             await asyncio.sleep(0.01)  # 控制发送速度
 
+
 async def main():
     server = await websockets.serve(audio_handler, "localhost", 8080)
-    print("Server started")
-    await server.wait_closed()
-    # 等待 100ms
-    await asyncio.sleep(0.1)
     await process_audio()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
