@@ -51,21 +51,27 @@ wss.on('connection', ws => {
         fileStream.write(header);
     };
 
+    // 在连接开始时，立即写入WAV头
+    writeWAVHeader(fileStream, 0);
+
     ws.on('message', message => {
         // 将数据追加到缓存中
         audioData = Buffer.concat([audioData, message]);
+        // 实时写入音频数据到文件
+        fileStream.write(message);
     });
 
     ws.on('close', () => {
         const bufferLength = audioData.length;
 
-        // 在关闭连接时，写入WAV文件头
-        writeWAVHeader(fileStream, bufferLength);
+        // 关闭连接时更新WAV文件头中的数据大小
+        const fd = fs.openSync(filePath, 'r+');
+        const headerBuffer = Buffer.alloc(4);
+        headerBuffer.writeUInt32LE(bufferLength, 0);
+        fs.writeSync(fd, headerBuffer, 0, 4, 40);  // 更新文件头中的数据大小
+        fs.closeSync(fd);
 
-        // 写入音频数据
-        fileStream.write(audioData);
         fileStream.end(); // 结束写入文件
-
         console.log(`客户端已断开，音频保存为：${fileName}`);
     });
 
@@ -73,11 +79,21 @@ wss.on('connection', ws => {
         console.error('WebSocket 错误:', error);
     });
 
-    // 可选：在 10 秒后发送已缓存的音频数据回客户端
+    // 读取并发送本地 WAV 文件到前端
     setTimeout(() => {
-        if (audioData.length > 0) {
-            ws.send(audioData); // 发送音频数据到前端
-            console.log('音频数据已发送到前端');
+        if (fs.existsSync("/Users/xiexianjun/Desktop/code/Hack/front_end/audio/audio_1726043570125.wav")) {
+            // 读取文件并发送
+            fs.readFile("/Users/xiexianjun/Desktop/code/Hack/front_end/audio/audio_1726043570125.wav", (err, data) => {
+                if (err) {
+                    console.error('读取音频文件失败:', err);
+                    return;
+                }
+                // 将WAV文件通过WebSocket发送到客户端
+                ws.send(data);
+                console.log('本地音频文件已发送到前端');
+            });
+        } else {
+            console.error('音频文件不存在');
         }
     }, 10000); // 10 秒后触发
 });
