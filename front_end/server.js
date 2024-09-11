@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const WebSocket = require('ws');
-const { spawn } = require('child_process');
 
 const PORT = 8080;
 
@@ -14,7 +13,7 @@ wss.on('connection', ws => {
     console.log('客户端已连接');
 
     // 创建一个唯一的文件名
-    const fileName = `audio_${Date.now()}.webm`;
+    const fileName = `audio_${Date.now()}.wav`;
     const filePath = path.join(__dirname, 'audio', fileName);
 
     // 确保音频目录存在
@@ -23,57 +22,62 @@ wss.on('connection', ws => {
     }
 
     const fileStream = fs.createWriteStream(filePath);
+
     let audioData = Buffer.alloc(0); // 用于缓存音频数据
 
+    // 写入WAV文件头信息
+    const writeWAVHeader = (fileStream, bufferLength) => {
+        const header = Buffer.alloc(44);
+
+        // RIFF Chunk
+        header.write('RIFF', 0);
+        header.writeUInt32LE(36 + bufferLength, 4);  // ChunkSize (文件总大小 - 8)
+        header.write('WAVE', 8);
+
+        // fmt subchunk
+        header.write('fmt ', 12);
+        header.writeUInt32LE(16, 16); // Subchunk1Size (PCM格式，16字节)
+        header.writeUInt16LE(1, 20);  // 音频格式 (1 = PCM)
+        header.writeUInt16LE(1, 22);  // 声道数 (1 = 单声道)
+        header.writeUInt32LE(44100, 24); // 采样率 (44.1kHz)
+        header.writeUInt32LE(44100 * 2, 28); // ByteRate (采样率 * 声道数 * 每个样本的字节数)
+        header.writeUInt16LE(2, 32);  // BlockAlign (声道数 * 每个样本的字节数)
+        header.writeUInt16LE(16, 34); // 每个样本的位数
+
+        // data subchunk
+        header.write('data', 36);
+        header.writeUInt32LE(bufferLength, 40);  // Subchunk2Size (数据大小)
+
+        fileStream.write(header);
+    };
+
     ws.on('message', message => {
-        fileStream.write(message);
         // 将数据追加到缓存中
         audioData = Buffer.concat([audioData, message]);
     });
-    // 在 10 秒后发送音频数据
-    setTimeout(() => {
-        ws.send(audioData); // 发送音频数据到前端
-        console.log('音频数据已发送到前端');
-    }, 10000); // 10 秒后触发
+
     ws.on('close', () => {
-        fileStream.end();
+        const bufferLength = audioData.length;
+
+        // 在关闭连接时，写入WAV文件头
+        writeWAVHeader(fileStream, bufferLength);
+
+        // 写入音频数据
+        fileStream.write(audioData);
+        fileStream.end(); // 结束写入文件
+
         console.log(`客户端已断开，音频保存为：${fileName}`);
-
-
-
-        // 可选：将 webm 格式转换为 mp3
-        convertWebMToMP3(filePath);
     });
 
     ws.on('error', error => {
         console.error('WebSocket 错误:', error);
     });
-});
 
-// 将 WebM 转换为 MP3
-function convertWebMToMP3(inputPath) {
-    const outputPath = inputPath.replace('.webm', '.mp3');
-    const ffmpeg = spawn('ffmpeg', [
-        '-y', // 覆盖输出文件
-        '-i', inputPath,
-        '-vn', // 无视频
-        '-ab', '128k', // 音频比特率
-        '-ar', '44100', // 音频采样率
-        '-f', 'mp3',
-        outputPath
-    ]);
-
-    ffmpeg.stderr.on('data', data => {
-        console.error(`ffmpeg 错误：${data}`);
-    });
-
-    ffmpeg.on('close', code => {
-        if (code === 0) {
-            console.log(`转换成功：${outputPath}`);
-            // 可选：删除原始的 webm 文件
-            fs.unlinkSync(inputPath);
-        } else {
-            console.error(`ffmpeg 进程退出，退出码：${code}`);
+    // 可选：在 10 秒后发送已缓存的音频数据回客户端
+    setTimeout(() => {
+        if (audioData.length > 0) {
+            ws.send(audioData); // 发送音频数据到前端
+            console.log('音频数据已发送到前端');
         }
-    });
-}
+    }, 10000); // 10 秒后触发
+});
