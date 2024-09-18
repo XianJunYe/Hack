@@ -8,9 +8,7 @@ let startButton = document.getElementById('startButton');
 let stopButton = document.getElementById('stopButton');
 let statusDiv = document.getElementById('status');
 
-pauseButton.addEventListener('click', () => {
-    socket2.send('pause');
-});
+
 
 startButton.addEventListener('click', async () => {
     // 请求麦克风权限并获取音频流
@@ -63,6 +61,10 @@ startButton.addEventListener('click', async () => {
         console.error('获取麦克风权限失败:', err);
         statusDiv.textContent = '无法获取麦克风权限。';
     }
+});
+
+pauseButton.addEventListener('click', () => {
+    socket2.send('pause');
 });
 
 stopButton.addEventListener('click', () => {
