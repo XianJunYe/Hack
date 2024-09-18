@@ -11,8 +11,14 @@ from ppasr.infer_utils.vad_predictor import VADPredictor
 import os
 import soundfile
 
+from back_end.util.Audio2Text import WhisperAPI
+from back_end.util.Text2Audio import generate_audio
+from back_end.util.chat import GPTChat
+
 # Asyncio queue for audio data
 audio_queue = asyncio.Queue()
+
+gpt_chat = GPTChat()
 
 
 def read_ffmpeg_output(process):
@@ -28,8 +34,9 @@ def read_ffmpeg_output(process):
 
 
 sample_buffer = bytes()
-def process_audio(websocket):
+def process_audio():
     """处理从队列中获取的音频数据"""
+    global sample_buffer
     vad = VADPredictor()
     output_dir = 'output_segments'
     os.makedirs(output_dir, exist_ok=True)
@@ -43,6 +50,11 @@ def process_audio(websocket):
             # 将音频数据输出到文件
             wav, sr = soundfile.read(io.BytesIO(sample_buffer), dtype=np.float32)
             soundfile.write('output.wav', wav, sr)
+            whisper = WhisperAPI("E4ywH0oIhzJ9Vf")
+            # 翻译音频
+            translation_result = whisper.transcribe("output.wav")
+            print("翻译结果:", translation_result)
+
             break
 
         sample_buffer = sample_buffer + chunk
@@ -83,9 +95,17 @@ async def audio_handler(websocket, path):
         # Start reading ffmpeg output
         read_thread = threading.Thread(target=read_ffmpeg_output, args=(process,))
         read_thread.start()
-        read_thread = threading.Thread(target=process_audio, args=(websocket, ))
+        read_thread = threading.Thread(target=process_audio)
         read_thread.start()
         print("task created")
+
+        response = gpt_chat.chat("system", "你是一个背调助手，我们是 ks 公司的 hr，现在你正在与被访谈者进行通话，你可以根据背调清单向访谈者提出问一些问题，每次只提问其中的一个问题，这是背调清单的内容：\{姓名:?,工作地点:?\}，下面请你开始与访谈者的第一句话。")
+        file_path = generate_audio(response)
+
+        # Send the audio file bytes to the client
+        with open(file_path, 'rb') as audio_file:
+            audio_bytes = audio_file.read()
+            await websocket.send(audio_bytes)
 
         try:
             while True:
@@ -98,6 +118,12 @@ async def audio_handler(websocket, path):
             process.stdin.close()
             process.wait()
     if path == '/pause':
+
+        whisper = WhisperAPI("E4ywH0oIhzJ9Vf")
+        # 翻译音频
+        translation_result = whisper.transcribe("output.wav")
+        print("翻译结果:", translation_result)
+
         await websocket.send(sample_buffer)
 
 

@@ -35,16 +35,16 @@ class WhisperAPI:
         """转录音频"""
         return self._send_request("transcriptions", file_path)
 
-# 示例使用
-token = "E4ywH0oIhzJ9Vf"  # 替换为你的实际token
-file_path = "/Users/xiexianjun/Desktop/code/Hack/back_end/speaker/speaker2_a_cn_16k.wav"
-
-whisper = WhisperAPI(token)
-
-# 翻译音频
-translation_result = whisper.translate(file_path)
-print("翻译结果:", translation_result)
-
-# 转录音频
-transcription_result = whisper.transcribe(file_path)
-print("转录结果:", transcription_result)
+# # 示例使用
+# token = "E4ywH0oIhzJ9Vf"  # 替换为你的实际token
+# file_path = "/Users/xiexianjun/Desktop/code/Hack/back_end/speaker/speaker2_a_cn_16k.wav"
+#
+# whisper = WhisperAPI(token)
+#
+# # 翻译音频
+# translation_result = whisper.translate(file_path)
+# print("翻译结果:", translation_result)
+#
+# # 转录音频
+# transcription_result = whisper.transcribe(file_path)
+# print("转录结果:", transcription_result)

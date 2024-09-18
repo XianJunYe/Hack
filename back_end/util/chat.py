@@ -14,7 +14,7 @@ class GPTChat:
             "content": content
         })
 
-    def chat(self, prompt):
+    def chat(self, role, prompt):
         """与GPT进行对话，记录上下文。"""
         url = "https://ai-gateway.corp.kuaishou.com/v2/chat/completions"
         headers = {
@@ -24,7 +24,7 @@ class GPTChat:
         }
 
         # 添加用户输入到消息历史中
-        self.add_message("user", prompt)
+        self.add_message(role, prompt)
 
         data = {
             "model": self.model,
@@ -45,12 +45,14 @@ class GPTChat:
             return f"Error: {response.status_code}, {response.text}"
 
 # 示例使用
-gpt_chat = GPTChat()
-
-# 第一次对话
-response = gpt_chat.chat("空客A320如果彻底断电，电传飞控还能操作飞机吗，能安全着陆吗？")
-print(response)
-
-# 第二次对话，自动带上上下文
-response = gpt_chat.chat("那如果没有外部电源支援，备用电源能用多久？")
-print(response)
+# gpt_chat = GPTChat()
+# response = gpt_chat.chat("system", "你是一个背调助手，我们是 ks 公司的 hr，现在你正在与被访谈者进行通话，你可以根据背调清单向访谈者提出问一些问题，每次只提问其中的一个问题，这是背调清单的内容：\{姓名:?,工作地点:?\}，下面请你开始与访谈者的第一句话。")
+# print(response)
+#
+# # 第一次对话
+# response = gpt_chat.chat("user", "你好，我是张三")
+# print(response)
+# #
+# # # 第二次对话，自动带上上下文
+# response = gpt_chat.chat("user", "我现在在北京工作")
+# print(response)
