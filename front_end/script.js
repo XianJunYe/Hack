@@ -2,10 +2,15 @@
 
 let mediaRecorder;
 let socket;
+let socket2;
 let audioContext;
 let startButton = document.getElementById('startButton');
 let stopButton = document.getElementById('stopButton');
 let statusDiv = document.getElementById('status');
+
+pauseButton.addEventListener('click', () => {
+    socket2.send('pause');
+});
 
 startButton.addEventListener('click', async () => {
     // 请求麦克风权限并获取音频流
@@ -15,6 +20,9 @@ startButton.addEventListener('click', async () => {
 
         // 初始化 WebSocket 连接
         socket = new WebSocket('ws://localhost:8080');
+        socket2 = new WebSocket('ws://localhost:8080/pause');
+
+
 
         socket.addEventListener('open', () => {
             statusDiv.textContent = '服务器连接成功，开始录音...';
