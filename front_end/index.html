@@ -54,6 +54,15 @@
             width: 80%;
             max-width: 300px;
         }
+        textarea {
+            width: 100%;  /* 让宽度为100%，也可以根据需要设置固定宽度 */
+            height: 100%;
+            padding: 10px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: none; /* 禁止用户手动拉伸大小 */
+            overflow-y: hidden; /* 隐藏滚动条 */
+        }
 
         #buttons {
             display: flex;
@@ -92,7 +101,7 @@
     <div class="section section3">
         <h1>实时通话文稿</h1>   
 
-        <input type="text" id="inputField" placeholder="请输入内容">
+        <textarea type="text" id="inputField" placeholder="请输入内容"></textarea>
     </div>
 
     <script src="script.js"></script>

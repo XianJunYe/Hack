@@ -70,6 +70,9 @@ startButton.addEventListener('click', async () => {
 
             // 将接收到的数据添加到文本框中
             inputField.value += receivedData + '\n'; // 换行，便于查看每条数据
+
+            this.style.height = 'auto';  // 先重置高度，防止折叠问题
+            this.style.height = this.scrollHeight + 'px';  // 根据内容设置高度
         };
 
         // 监听 WebSocket 错误事件
