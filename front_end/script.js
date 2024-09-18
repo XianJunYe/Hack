@@ -24,6 +24,7 @@ startButton.addEventListener('click', async () => {
 
             // 当有音频数据可用时发送到服务器
             mediaRecorder.addEventListener('dataavailable', event => {
+                console.log('音频数据可用:', event.data.size)
                 if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
                     socket.send(event.data);
                 }
