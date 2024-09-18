@@ -17,9 +17,10 @@ def generate_audio(text, lang='zh-tw', output_path='output.wav'):
     tts.save(output_path)
     return output_path
 
-# 示例使用
-text = """
-其实我觉得人是一个多重的社会属性的动物。
-"""
-file_path = generate_audio(text)
-print(f"音频文件保存到: {file_path}")
+if __name__ == "__main__":
+    # 示例使用
+    text = """
+    其实我觉得人是一个多重的社会属性的动物。
+    """
+    file_path = generate_audio(text)
+    print(f"音频文件保存到: {file_path}")

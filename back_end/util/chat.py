@@ -1,5 +1,6 @@
 import requests
 
+
 class GPTChat:
     def __init__(self, model="gpt-4o", token="E4ywH0oIhzJ9Vf", temperature=0.1):
         self.model = model
@@ -34,7 +35,7 @@ class GPTChat:
         }
 
         response = requests.post(url, headers=headers, json=data)
-        
+
         if response.status_code == 200:
             result = response.json()
             reply = result['choices'][0]['message']['content']
@@ -44,15 +45,21 @@ class GPTChat:
         else:
             return f"Error: {response.status_code}, {response.text}"
 
-# 示例使用
-# gpt_chat = GPTChat()
-# response = gpt_chat.chat("system", "你是一个背调助手，我们是 ks 公司的 hr，现在你正在与被访谈者进行通话，你可以根据背调清单向访谈者提出问一些问题，每次只提问其中的一个问题，这是背调清单的内容：\{姓名:?,工作地点:?\}，下面请你开始与访谈者的第一句话。")
-# print(response)
-#
-# # 第一次对话
-# response = gpt_chat.chat("user", "你好，我是张三")
-# print(response)
-# #
-# # # 第二次对话，自动带上上下文
-# response = gpt_chat.chat("user", "我现在在北京工作")
-# print(response)
+
+if __name__ == "__main__":
+    gpt_chat = GPTChat()
+    response = gpt_chat.chat("system",
+                             "你是一个面试预约助手，你现在作为 快手 公司的"
+                             "hr，现在你正在与候选人进行通话，你可以根据一些基础信息向候选人提出问一些问题，"
+                             "每次只提问其中的一个问题，这是面试预约单的内容：\{"
+                             "地点:（线上?、线下?）,空闲时间:?,\}，这是候选者的基本信息：{姓名：张三}，"
+                             "面试官空闲时间：{20240921 10：00-18：00& 20240922 10：00-18:00}下面请你开始与访谈者的第一句话。")
+    print(response)
+
+    # 第一次对话
+    response = gpt_chat.chat("user", "你好，我是张三")
+    print(response)
+
+    # 第二次对话，自动带上上下文
+    response = gpt_chat.chat("user", "我现在在北京工作")
+    print(response)
