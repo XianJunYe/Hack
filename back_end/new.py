@@ -177,12 +177,8 @@ async def audio_handler(websocket, path):
         pass  # 根据您的需求实现
 
     elif path == '/output':
-        try:
-            async for message in websocket:
-                if message:
-                    continue
-        except websockets.ConnectionClosed:
-            print("WebSocket connection closed")
+        pass
+
 
 async def main():
     server = await websockets.serve(audio_handler, "localhost", 8080)

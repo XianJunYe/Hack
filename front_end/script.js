@@ -81,8 +81,8 @@ startButton.addEventListener('click', async () => {
         };
 
         // 当 WebSocket 关闭时触发
-        socket3.onclose = function () {
-            console.log('WebSocket connection closed');
+        socket3.onclose = function (event) {
+            console.log('WebSocket connection closed',event.code, event.reason);
         };
 
     } catch (err) {
