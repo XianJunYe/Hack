@@ -39,6 +39,20 @@
 
         .section3 {
             background-color: #2ecc71;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .section3 h1 {
+            margin-top: 20px;
+        }
+
+        .section3 input[type="text"] {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 18px;
+            width: 80%;
+            max-width: 300px;
         }
 
         #buttons {
@@ -64,10 +78,10 @@
 
 <body>
     <div class="section section1">
-        表单
+        <h1>表单</h1>   
     </div>
     <div class="section section2">
-        <h1>实时音频传输示例</h1>
+        <h1>实时音频传输示例</h1>   
         <div id="buttons">
             <button id="startButton">开始通话</button>
             <button id="pauseButton">我说完了</button>
@@ -76,7 +90,9 @@
         <div id="status"></div>
     </div>
     <div class="section section3">
-        实时通话文稿
+        <h1>实时通话文稿</h1>   
+
+        <input type="text" id="inputField" placeholder="请输入内容">
     </div>
 
     <script src="script.js"></script>

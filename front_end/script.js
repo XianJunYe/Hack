@@ -3,12 +3,34 @@
 let mediaRecorder;
 let socket;
 let socket2;
+let socket3;
 let audioContext;
 let startButton = document.getElementById('startButton');
 let stopButton = document.getElementById('stopButton');
 let statusDiv = document.getElementById('status');
 
+let inputField = document.getElementById('inputField');
 
+
+socket3 = new WebSocket('ws://localhost:8080/output');
+
+
+socket3.onmessage = function(event) {
+    const receivedData = event.data; // 从 WebSocket 获取的数据
+    
+    // 将接收到的数据添加到文本框中
+    inputField.value += receivedData + '\n'; // 换行，便于查看每条数据
+};
+
+// 监听 WebSocket 错误事件
+socket3.onerror = function(error) {
+    console.error('WebSocket error:', error);
+};
+
+// 当 WebSocket 关闭时触发
+socket3.onclose = function() {
+    console.log('WebSocket connection closed');
+};
 
 startButton.addEventListener('click', async () => {
     // 请求麦克风权限并获取音频流
