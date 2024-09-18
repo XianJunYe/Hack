@@ -68,6 +68,7 @@ startButton.addEventListener('click', async () => {
 stopButton.addEventListener('click', () => {
     mediaRecorder.stop();
     socket.close();
+    socket2.close();
     statusDiv.textContent = '录音已停止。';
 
     startButton.disabled = false;
