@@ -2,6 +2,8 @@ import asyncio
 import io
 import select
 import threading
+import time
+
 import websockets
 import ffmpeg
 import numpy as np
@@ -25,42 +27,48 @@ def read_ffmpeg_output(process):
             asyncio.run(audio_queue.put(data))
 
 
-def process_audio():
+sample_buffer = bytes()
+def process_audio(websocket):
     """处理从队列中获取的音频数据"""
     vad = VADPredictor()
     output_dir = 'output_segments'
     os.makedirs(output_dir, exist_ok=True)
     file_counter = 0
-    sample_buffer = bytes()
-
+    # 当前时间戳
+    start_time = int(time.time() * 1000)
     processed_samples = 0
     while True:
         chunk = asyncio.run(audio_queue.get())
         if chunk is None:
-            continue
+            # 将音频数据输出到文件
+            wav, sr = soundfile.read(io.BytesIO(sample_buffer), dtype=np.float32)
+            soundfile.write('output.wav', wav, sr)
+            break
 
         sample_buffer = sample_buffer + chunk
-        wav, sr = soundfile.read(io.BytesIO(sample_buffer), dtype=np.float32)
-        start = 0
-        # Process available samples
-        for i in range(processed_samples, len(wav), vad.window_size_samples):
-            processed_samples = i
-            print(processed_samples)
-            chunk_wav = wav[i: i + vad.window_size_samples]
-            speech_dict = vad.stream_vad(chunk_wav, sampling_rate=sr)
-            if speech_dict:
-                if 'start' in speech_dict:
-                    start = int(speech_dict['start'])
-                if 'end' in speech_dict:
-                    end = int(speech_dict['end'])
-                    save_path = os.path.join(output_dir, f"speech_segment_{file_counter}.wav")
-                    soundfile.write(save_path, wav[start: end], sr)
-                    file_counter += 1
-                    start, end = 0, 0
-                print(speech_dict, end=' ')
-        if start != 0:
-            save_path = os.path.join(output_dir, f"speech_segment_{file_counter}.wav")
-            soundfile.write(save_path, wav[start:], sr)
+
+        # 分割数据
+
+        # wav, sr = soundfile.read(io.BytesIO(sample_buffer), dtype=np.float32)
+        # start = 0
+        # # Process available samples
+        # for i in range(0, len(wav), vad.window_size_samples):
+        #     processed_samples = i
+        #     chunk_wav = wav[i: i + vad.window_size_samples]
+        #     speech_dict = vad.stream_vad(chunk_wav, sampling_rate=sr)
+        #     if speech_dict:
+        #         if 'start' in speech_dict:
+        #             start = int(speech_dict['start'])
+        #         if 'end' in speech_dict:
+        #             end = int(speech_dict['end'])
+        #             save_path = os.path.join(output_dir, f"speech_segment_{file_counter}.wav")
+        #             soundfile.write(save_path, wav[start: end], sr)
+        #             file_counter += 1
+        #             start, end = 0, 0
+        #         print(speech_dict, end=' ')
+        # if start != 0:
+        #     save_path = os.path.join(output_dir, f"speech_segment_{file_counter}.wav")
+        #     soundfile.write(save_path, wav[start:], sr)
 
 async def audio_handler(websocket, path):
     if path == "/":
@@ -75,7 +83,7 @@ async def audio_handler(websocket, path):
         # Start reading ffmpeg output
         read_thread = threading.Thread(target=read_ffmpeg_output, args=(process,))
         read_thread.start()
-        read_thread = threading.Thread(target=process_audio)
+        read_thread = threading.Thread(target=process_audio, args=(websocket, ))
         read_thread.start()
         print("task created")
 
@@ -89,6 +97,9 @@ async def audio_handler(websocket, path):
         finally:
             process.stdin.close()
             process.wait()
+    if path == '/pause':
+        await websocket.send(sample_buffer)
+
 
 async def main():
     server = await websockets.serve(audio_handler, "localhost", 8080)
