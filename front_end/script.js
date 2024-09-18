@@ -18,7 +18,7 @@ startButton.addEventListener('click', async () => {
 
         // 初始化 WebSocket 连接
         socket = new WebSocket('ws://localhost:8080');
-        socket2 = new WebSocket('ws://localhost:8080/pause');
+        
 
 
 
@@ -64,7 +64,8 @@ startButton.addEventListener('click', async () => {
 });
 
 pauseButton.addEventListener('click', () => {
-    socket2.send('pause');
+    socket2 = new WebSocket('ws://localhost:8080/pause');
+    //socket2.send('pause');
 });
 
 stopButton.addEventListener('click', () => {
