@@ -181,7 +181,7 @@ async def audio_handler(websocket, path):
             await connections["/"].send(audio_bytes)
 
         gpt_chat_for_json = GPTChat()
-        gpt_chat.add_message("system",
+        gpt_chat_for_json.add_message("system",
                              "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单定义如下{"
                              "InterviewLocation:（线上?、线下?）,InterviewTime:?}")
         for talk in talk_history:
