@@ -48,18 +48,14 @@ class GPTChat:
 
 if __name__ == "__main__":
     gpt_chat = GPTChat()
-    response = gpt_chat.chat("system",
-                             "你是一个面试预约助手，你现在作为 快手 公司的"
-                             "hr，现在你正在与候选人进行通话，你可以根据一些基础信息向候选人提出问一些问题，"
-                             "每次只提问其中的一个问题，这是面试预约单的内容：\{"
-                             "地点:（线上?、线下?）,空闲时间:?,\}，这是候选者的基本信息：{姓名：张三}，"
-                             "面试官空闲时间：{20240921 10：00-18：00& 20240922 10：00-18:00}下面请你开始与访谈者的第一句话。")
-    print(response)
+    gpt_chat.add_message("system",
+                             "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单定义如下{"
+                             "InterviewLocation:（线上?、线下?）,InterviewTime:?}")
+    gpt_chat.add_message("assistant", "您好，张三。我是快手公司的HR。请问您更倾向于线上还是线下面试呢？")
+    gpt_chat.add_message("user", "我个人更倾向于线上面是")
+    gpt_chat.add_message("assistant", "好的，张三。请问您在2024年9月21日或22日的10:00到18:00之间，哪个时间段比较方便进行线上面试呢？")
+    gpt_chat.add_message("user", "我个人的话会更倾向于 9月22号的下午两点开始先上面试")
+    response = gpt_chat.chat("assistant", "好的，张三。我已经为您安排了9月22日下午2点的线上面试。稍后我会发送相关的会议链接和详细信息给您。如果您有任何问题，请随时联系我。祝您面试顺利！")
 
-    # 第一次对话
-    response = gpt_chat.chat("user", "你好，我是张三")
-    print(response)
-
-    # 第二次对话，自动带上上下文
-    response = gpt_chat.chat("user", "我现在在北京工作")
+    print("收集到的表单信息如下")
     print(response)

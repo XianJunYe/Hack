@@ -10,7 +10,7 @@ import soundfile
 
 from ppasr.infer_utils.vad_predictor import VADPredictor
 from back_end.util.Audio2Text import WhisperAPI
-from back_end.util.Text2Audio import generate_audio
+from back_end.util.Text2Speech import generate_audio
 from back_end.util.chat import GPTChat
 
 # Asyncio queue for audio data
@@ -86,6 +86,7 @@ async def process_audio(audio_queue):
     except asyncio.CancelledError:
         pass
 
+talk_history = [];
 
 async def audio_handler(websocket, path):
     connections[path] = websocket  # 存储当前路径的连接对象
@@ -119,8 +120,9 @@ async def audio_handler(websocket, path):
                                  "地点:（线上?、线下?）,空闲时间:?,\}，这是候选者的基本信息：{姓名：张三}，"
                                  "面试官空闲时间：{20240921 10：00-18：00& 20240922 10：00-18:00}下面请你开始与访谈者的第一句话。")
         print(response)
+        talk_history.insert({"role":"", "text": response});
         await connections["/output"].send("AI:"+response)
-        file_path = generate_audio(response, lang="zh-cn")
+        file_path = generate_audio(response)
 
         # Send the audio file bytes to the client
         with open(file_path, 'rb') as audio_file:
@@ -170,10 +172,16 @@ async def audio_handler(websocket, path):
         response = gpt_chat.chat("user", translation_result["text"])
         print(response)
         await connections["/output"].send("AI:"+response)
-        response_file = generate_audio(response, lang="zh-cn", output_path="generated.wav")
+        response_file = generate_audio(response, output_path="generated.wav")
         with open(response_file, 'rb') as audio_file:
             audio_bytes = audio_file.read()
             await connections["/"].send(audio_bytes)
+
+        gpt_chat_for_json = GPTChat()
+        response = gpt_chat_for_json.chat("user", translation_result["text"])
+
+
+
         pass  # 根据您的需求实现
 
     elif path == '/output':
