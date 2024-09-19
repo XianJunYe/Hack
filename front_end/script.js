@@ -4,12 +4,14 @@ let mediaRecorder;
 let socket;
 let socket2;
 let socket3;
+let socket4;
 let audioContext;
 let startButton = document.getElementById('startButton');
 let stopButton = document.getElementById('stopButton');
 let statusDiv = document.getElementById('status');
 
 let inputField = document.getElementById('inputField');
+let inputField2 = document.getElementById('inputField2');
 
 
 
@@ -19,6 +21,9 @@ startButton.addEventListener('click', async () => {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         statusDiv.textContent = '麦克风权限获取成功，正在连接服务器...';
+
+        socket3 = new WebSocket('ws://localhost:8080/output');
+        socket4 = new WebSocket('ws://localhost:8080/result');
 
         // 初始化 WebSocket 连接
         socket = new WebSocket('ws://localhost:8080');
@@ -62,7 +67,6 @@ startButton.addEventListener('click', async () => {
         });
 
 
-        socket3 = new WebSocket('ws://localhost:8080/output');
 
 
         socket3.onmessage = function (event) {
@@ -85,6 +89,26 @@ startButton.addEventListener('click', async () => {
             console.log('WebSocket connection closed',event.code, event.reason);
         };
 
+
+        socket4.onmessage = function (event) {
+            const receivedData = event.data; // 从 WebSocket 获取的数据
+
+            // 将接收到的数据添加到文本框中
+            inputField2.value += receivedData + '\n'; // 换行，便于查看每条数据
+
+            this.style.height = 'auto';  // 先重置高度，防止折叠问题
+            this.style.height = this.scrollHeight + 'px';  // 根据内容设置高度
+        };
+
+        // 监听 WebSocket 错误事件
+        socket4.onerror = function (error) {
+            console.error('WebSocket error:', error);
+        };
+
+        // 当 WebSocket 关闭时触发
+        socket4.onclose = function (event) {
+            console.log('WebSocket connection closed',event.code, event.reason);
+        };
     } catch (err) {
         console.error('获取麦克风权限失败:', err);
         statusDiv.textContent = '无法获取麦克风权限。';
@@ -98,9 +122,11 @@ pauseButton.addEventListener('click', () => {
 
 stopButton.addEventListener('click', () => {
     mediaRecorder.stop();
-    socket.close();
-    socket2.close();
+    //socket.close();
+    //socket2.close();
     statusDiv.textContent = '录音已停止。';
+
+
 
     startButton.disabled = false;
     stopButton.disabled = true;
