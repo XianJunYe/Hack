@@ -120,7 +120,7 @@ async def audio_handler(websocket, path):
                                  "地点:（线上?、线下?）,空闲时间:?,\}，这是候选者的基本信息：{姓名：张三}，"
                                  "面试官空闲时间：{20240921 10：00-18：00& 20240922 10：00-18:00}下面请你开始与访谈者的第一句话。")
         print(response)
-        talk_history.insert({"role":"", "text": response});
+        talk_history.append({"role":"assistant", "text": response})
         await connections["/output"].send("AI:"+response)
         file_path = generate_audio(response)
 
@@ -168,9 +168,12 @@ async def audio_handler(websocket, path):
         # 翻译音频
         translation_result = whisper.transcribe("output.wav")
         print("翻译结果:", translation_result)
+        talk_history.append({"role":"user", "text": translation_result["text"]})
         await connections["/output"].send("User:"+translation_result["text"])
         response = gpt_chat.chat("user", translation_result["text"])
         print(response)
+
+        talk_history.append({"role":"assistant", "text": response})
         await connections["/output"].send("AI:"+response)
         response_file = generate_audio(response, output_path="generated.wav")
         with open(response_file, 'rb') as audio_file:
@@ -178,13 +181,27 @@ async def audio_handler(websocket, path):
             await connections["/"].send(audio_bytes)
 
         gpt_chat_for_json = GPTChat()
-        response = gpt_chat_for_json.chat("user", translation_result["text"])
+        gpt_chat.add_message("system",
+                             "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单定义如下{"
+                             "InterviewLocation:（线上?、线下?）,InterviewTime:?}")
+        for talk in talk_history:
+            gpt_chat_for_json.add_message(talk["role"], talk["text"])
+        response = gpt_chat_for_json.chat("system", "通话结束，请生成 json 数据")
+
+        await connections["/result"].send(response)
 
 
 
         pass  # 根据您的需求实现
 
     elif path == '/output':
+        try:
+            async for message in websocket:
+                if message:
+                    continue
+        except websockets.ConnectionClosed:
+            print("WebSocket connection closed")
+    elif path == '/result':
         try:
             async for message in websocket:
                 if message:
