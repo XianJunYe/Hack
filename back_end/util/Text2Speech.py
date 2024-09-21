@@ -6,7 +6,7 @@ client = OpenAI(api_key="sk-2qufi8q3XB1jsFcQAb67252875024c419fA51fD25e8c4cE5",
 def generate_audio(text, output_path='output.wav'):
     response = client.audio.speech.create(
         model="tts-1-hd-1106",
-        voice="fable",
+        voice="shimmer", #Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
         input=text,
         response_format="wav",
     )

@@ -26,7 +26,7 @@ class GPTChat:
 
         # 添加用户输入到消息历史中
         self.add_message(role, prompt)
-
+        print("调用 chatgpt 获取回复，上下文为: ", self.messages)
         data = {
             "model": self.model,
             "messages": self.messages,  # 包含整个对话历史
