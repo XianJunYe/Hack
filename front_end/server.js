@@ -9,6 +9,22 @@ const wss = new WebSocket.Server({ port: PORT }, () => {
     console.log(`WebSocket 服务器已启动，监听端口：${PORT}`);
 });
 
+const socket2 = new WebSocket('ws://localhost:8080/pause');
+
+
+socket2.onmessage = function (event) {
+    console.log('Message from socket2:', event.data);
+};
+
+socket2.onclose = function () {
+    console.log('socket2 closed');
+};
+
+socket2.onerror = function (error) {
+    console.error('Error with socket2:', error);
+};
+
+
 wss.on('connection', ws => {
     console.log('客户端已连接');
 
