@@ -169,32 +169,31 @@ startButton.addEventListener('click', async () => {
             statusDiv.textContent = '音频播放完毕';
         };*/
 
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioElement = document.getElementById('audioElement');
+        const statusDiv = document.getElementById('status');
 
-        socket.binaryType = 'arraybuffer';  // 接收二进制数据
+        if (window.MediaSource) {
+            const mediaSource = new MediaSource();
+            audioElement.src = URL.createObjectURL(mediaSource);
 
-        socket.onmessage = async (event) => {
-            // 解码音频数据为 AudioBuffer
-            const audioBuffer = await audioContext.decodeAudioData(event.data);
+            mediaSource.addEventListener('sourceopen', () => {
+                const sourceBuffer = mediaSource.addSourceBuffer('audio/wav; codecs="vorbis"'); // 根据流的格式更改 mime 类型
 
-            // 播放解码后的音频
-            playAudioBuffer(audioBuffer);
-        };
+                socket.binaryType = 'arraybuffer';  // 接收二进制数据
 
-        socket.onclose = () => {
-            statusDiv.textContent = '音频流传输结束';
-        };
+                socket.onmessage = (event) => {
+                    // 将数据块附加到 sourceBuffer 中
+                    sourceBuffer.appendBuffer(event.data);
+                };
 
-        // 播放音频数据
-        function playAudioBuffer(audioBuffer) {
-            const source = audioContext.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(audioContext.destination);
-            source.start(0);
-
-            source.onended = () => {
-                statusDiv.textContent = '音频播放完毕';
-            };
+                socket.onclose = () => {
+                    // 关闭媒体源
+                    mediaSource.endOfStream();
+                    statusDiv.textContent = '音频流传输结束';
+                };
+            });
+        } else {
+            console.error('MediaSource API is not supported on this browser.');
         }
 
 
