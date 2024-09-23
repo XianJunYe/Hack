@@ -182,8 +182,15 @@ startButton.addEventListener('click', async () => {
                 socket.binaryType = 'arraybuffer';  // 接收二进制数据
 
                 socket.onmessage = (event) => {
-                    // 将数据块附加到 sourceBuffer 中
-                    sourceBuffer.appendBuffer(event.data);
+                    if (sourceBuffer.updating) {
+                        // 等待当前更新完成再追加新数据
+                        sourceBuffer.addEventListener('updateend', () => {
+                            sourceBuffer.appendBuffer(event.data);  // 更新结束时，追加新数据
+                        }, { once: true });  // 只监听一次事件
+                    } else {
+                        // 如果没有在更新，直接追加数据
+                        sourceBuffer.appendBuffer(event.data);
+                    }
                 };
 
                 socket.onclose = () => {
