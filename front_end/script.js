@@ -160,16 +160,16 @@ startButton.addEventListener('click', async () => {
 
 
 
-        /*socket.onmessage = (event) => {
+        socket.onmessage = (event) => {
             // 播放接收到的音频数据
             const audioBlob = new Blob([event.data], { type: 'audio/webm' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             audio.play();
             statusDiv.textContent = '音频播放完毕';
-        };*/
+        };
 
-        const audioElement = document.getElementById('audioElement');
+        /*const audioElement = document.getElementById('audioElement');
         const statusDiv = document.getElementById('status');
 
         if (window.MediaSource) {
@@ -177,7 +177,7 @@ startButton.addEventListener('click', async () => {
             audioElement.src = URL.createObjectURL(mediaSource);
 
             mediaSource.addEventListener('sourceopen', () => {
-                const sourceBuffer = mediaSource.addSourceBuffer('audio/wav; codecs="vorbis"'); // 根据流的格式更改 mime 类型
+                const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');// 根据流的格式更改 mime 类型
 
                 socket.binaryType = 'arraybuffer';  // 接收二进制数据
 
@@ -202,7 +202,7 @@ startButton.addEventListener('click', async () => {
             console.error('MediaSource API is not supported on this browser.');
         }
 
-
+*/
 
 
 
@@ -214,7 +214,7 @@ startButton.addEventListener('click', async () => {
             const receivedData = event.data; // 从 WebSocket 获取的数据
             // 将接收到的数据添加到文本框中
             inputField.value += receivedData + '\n'; // 换行，便于查看每条数据
-            this.style.height = 'auto';  // 先重置高度，防止折叠问题
+            //this.style.height = 'auto';  // 先重置高度，防止折叠问题
             this.style.height = this.scrollHeight + 'px';  // 根据内容设置高度
         };
         // 监听 WebSocket 错误事件
