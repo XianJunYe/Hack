@@ -169,43 +169,6 @@ startButton.addEventListener('click', async () => {
             statusDiv.textContent = '音频播放完毕';
         };
 
-        /*const audioElement = document.getElementById('audioElement');
-        const statusDiv = document.getElementById('status');
-
-        if (window.MediaSource) {
-            const mediaSource = new MediaSource();
-            audioElement.src = URL.createObjectURL(mediaSource);
-
-            mediaSource.addEventListener('sourceopen', () => {
-                const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');// 根据流的格式更改 mime 类型
-
-                socket.binaryType = 'arraybuffer';  // 接收二进制数据
-
-                socket.onmessage = (event) => {
-                    if (sourceBuffer.updating) {
-                        // 等待当前更新完成再追加新数据
-                        sourceBuffer.addEventListener('updateend', () => {
-                            sourceBuffer.appendBuffer(event.data);  // 更新结束时，追加新数据
-                        }, { once: true });  // 只监听一次事件
-                    } else {
-                        // 如果没有在更新，直接追加数据
-                        sourceBuffer.appendBuffer(event.data);
-                    }
-                };
-
-                socket.onclose = () => {
-                    // 关闭媒体源
-                    mediaSource.endOfStream();
-                };
-            });
-        } else {
-            console.error('MediaSource API is not supported on this browser.');
-        }
-
-*/
-
-
-
         socket.addEventListener('error', error => {
             console.error('WebSocket 错误:', error);
             statusDiv.textContent = '服务器连接错误，请检查服务器是否运行。';
@@ -214,7 +177,7 @@ startButton.addEventListener('click', async () => {
             const receivedData = event.data; // 从 WebSocket 获取的数据
             // 将接收到的数据添加到文本框中
             inputField.value += receivedData + '\n'; // 换行，便于查看每条数据
-            //this.style.height = 'auto';  // 先重置高度，防止折叠问题
+            this.style.height = 'auto';  // 先重置高度，防止折叠问题
             this.style.height = this.scrollHeight + 'px';  // 根据内容设置高度
         };
         // 监听 WebSocket 错误事件
@@ -228,6 +191,56 @@ startButton.addEventListener('click', async () => {
         socket4.onmessage = function (event) {
             const receivedData = event.data; // 从 WebSocket 获取的数据
             final_json = receivedData;
+
+
+
+            const jsonString = final_json;
+            const jsonData = JSON.parse(jsonString); // 解析 JSON 字符串
+
+            const table = document.getElementById('jsonTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+
+            tbody.innerHTML = ''; // 清空现有的表格数据
+            thead.innerHTML = ''; // 清空现有的表头
+
+            // 生成表头
+            const headerRow = document.createElement('tr');
+            headerRow.appendChild(document.createElement('th')).textContent = '问题';
+            headerRow.appendChild(document.createElement('th')).textContent = '答案';
+            thead.appendChild(headerRow);
+
+            // 遍历 JSON 对象生成表格行
+            for (const question in jsonData) {
+                if (jsonData.hasOwnProperty(question)) {
+                    const answer = jsonData[question]; // 获取对应的答案
+                    const row = document.createElement('tr');
+
+                    // 创建问题单元格
+                    const questionCell = document.createElement('td');
+                    questionCell.textContent = question;
+                    row.appendChild(questionCell);
+
+                    // 创建答案单元格
+                    const answerCell = document.createElement('td');
+                    answerCell.textContent = answer;
+                    row.appendChild(answerCell);
+
+                    // 将新行添加到表格中
+                    tbody.appendChild(row);
+                }
+            }
+
+
+
+
+
+
+
+
+
+
+
             // 将接收到的数据添加到文本框中
             inputField2.value += receivedData + '\n'; // 换行，便于查看每条数据
             this.style.height = 'auto';  // 先重置高度，防止折叠问题
