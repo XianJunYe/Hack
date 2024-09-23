@@ -17,6 +17,7 @@ const newInputContainer = document.getElementById('newInputContainer');
 const addInputButton = document.getElementById('addInputButton');
 const removeInputButton = document.getElementById('removeInputButton');
 
+let final_json = ""
 
 // 添加问题的按钮
 addInputButton.addEventListener('click', () => {
@@ -146,7 +147,6 @@ startButton.addEventListener('click', async () => {
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
             // 当有音频数据可用时发送到服务器
             mediaRecorder.addEventListener('dataavailable', event => {
-                console.log('音频数据可用:', event.data.size)
                 if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
                     socket.send(event.data);
                 }
@@ -185,6 +185,7 @@ startButton.addEventListener('click', async () => {
         };
         socket4.onmessage = function (event) {
             const receivedData = event.data; // 从 WebSocket 获取的数据
+            final_json = receivedData;
             // 将接收到的数据添加到文本框中
             inputField2.value += receivedData + '\n'; // 换行，便于查看每条数据
             this.style.height = 'auto';  // 先重置高度，防止折叠问题
@@ -232,11 +233,13 @@ pauseButton.addEventListener('click', () => {
     });
 
 
-    socket22 = new WebSocket('ws://localhost:8080/init');
+    const socket22 = new WebSocket('ws://localhost:8080/init');
     socket22.addEventListener('open', () => {
         socket22.send(params);
     });
-
+    socket22.onmessage(function (event) {
+        loadingElement.textContent = '初始化完成';
+    })
 
 
 });
@@ -247,6 +250,44 @@ stopButton.addEventListener('click', () => {
     //socket2.close();
     statusDiv.textContent = '录音已停止。';
 
+
+    // 假设后端返回的消息是一个 JSON 字符串
+    const jsonString = final_json;
+    const jsonData = JSON.parse(jsonString); // 解析 JSON 字符串
+
+    const table = document.getElementById('jsonTable');
+    const thead = table.querySelector('thead');
+    const tbody = table.querySelector('tbody');
+
+    tbody.innerHTML = ''; // 清空现有的表格数据
+    thead.innerHTML = ''; // 清空现有的表头
+
+    // 生成表头
+    const headerRow = document.createElement('tr');
+    headerRow.appendChild(document.createElement('th')).textContent = '问题';
+    headerRow.appendChild(document.createElement('th')).textContent = '答案';
+    thead.appendChild(headerRow);
+
+    // 遍历 JSON 对象生成表格行
+    for (const question in jsonData) {
+        if (jsonData.hasOwnProperty(question)) {
+            const answer = jsonData[question]; // 获取对应的答案
+            const row = document.createElement('tr');
+
+            // 创建问题单元格
+            const questionCell = document.createElement('td');
+            questionCell.textContent = question;
+            row.appendChild(questionCell);
+
+            // 创建答案单元格
+            const answerCell = document.createElement('td');
+            answerCell.textContent = answer;
+            row.appendChild(answerCell);
+
+            // 将新行添加到表格中
+            tbody.appendChild(row);
+        }
+    }
 
 
     startButton.disabled = false;

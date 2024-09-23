@@ -144,3 +144,16 @@ button {
     margin-left: 5px; /* 添加左侧间距 */
 }
 
+#jsonTable {
+    width: 100%; /* 让表格宽度占满父组件 */
+    border-collapse: collapse; /* 合并边框 */
+}
+#jsonTable th, #jsonTable td {
+    border: 1px solid black; /* 边框样式 */
+    padding: 8px; /* 内边距 */
+    text-align: left; /* 文本左对齐 */
+    /*background-color: black;*/
+}
+#jsonTable th {
+    background-color: black ; /* 表头背景颜色 */
+}
