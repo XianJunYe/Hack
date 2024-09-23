@@ -203,7 +203,7 @@ startButton.addEventListener('click', async () => {
         statusDiv.textContent = '无法获取麦克风权限。';
     }
 });
-// 我说完了按钮
+// 初始化按钮
 pauseButton.addEventListener('click', () => {
     //socket2 = new WebSocket('ws://localhost:8080/pause');
     // 获取所有动态生成的输入框
@@ -225,9 +225,18 @@ pauseButton.addEventListener('click', () => {
     const selectedValue = selectElement.value; // 选中的值
     const selectedLabel = selectElement.options[selectElement.selectedIndex].text; // 选中的标签
 
-    console.log('输入框的内容:', inputValues);
-    console.log('下拉选择器的值:', selectedValue);
-    console.log('下拉选择器的标签:', selectedLabel);
+    const params = JSON.stringify({
+        question: inputValues,
+        scene: selectedLabel,
+        resume: apiResponseDiv.textContent
+    });
+
+
+    socket22 = new WebSocket('ws://localhost:8080/init');
+    socket22.addEventListener('open', () => {
+        socket22.send(params);
+    });
+
 
 
 });
