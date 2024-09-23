@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 
@@ -15,7 +17,8 @@ class GPTChat:
             "content": content
         })
 
-    def chat(self, role, prompt):
+    def chat(self, role, prompt, temperature=0.1):
+        start = time.time()
         """与GPT进行对话，记录上下文。"""
         url = "https://api.bltcy.ai/v1/chat/completions"
         headers = {
@@ -26,12 +29,12 @@ class GPTChat:
 
         # 添加用户输入到消息历史中
         self.add_message(role, prompt)
-        print("调用 chatgpt 获取回复，上下文为: ", self.messages)
+
         data = {
             "model": self.model,
             "messages": self.messages,  # 包含整个对话历史
             "stream": False,  # 如果你需要流式输出，可以改为True
-            "temperature": self.temperature
+            "temperature": temperature
         }
 
         response = requests.post(url, headers=headers, json=data)
@@ -41,6 +44,7 @@ class GPTChat:
             reply = result['choices'][0]['message']['content']
             # 将GPT的回复也添加到消息历史中
             self.add_message("assistant", reply)
+            print("调用 chatgpt 获取回复，耗时： ，", time.time() - start, "上下文为: ", self.messages)
             return reply
         else:
             return f"Error: {response.status_code}, {response.text}"

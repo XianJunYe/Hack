@@ -1,8 +1,8 @@
 import requests
 
 class WhisperAPI:
-    def __init__(self, token, model="whisper-1"):
-        self.base_url = "https://ai-gateway.corp.kuaishou.com/v1/audio"
+    def __init__(self, token="sk-2qufi8q3XB1jsFcQAb67252875024c419fA51fD25e8c4cE5", model="whisper-1"):
+        self.base_url = "https://api.bltcy.ai/v1/audio"
         self.token = token
         self.model = model
         self.headers = {
