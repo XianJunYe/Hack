@@ -11,7 +11,7 @@ async def generate_audio(text, connection):
         model="tts-1-1106",
         voice="shimmer", #Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
         input=text,
-        response_format="mp3",
+        response_format="wav",
     ) as response:
         for chunk in response.iter_bytes():
             await connection.send(chunk)
