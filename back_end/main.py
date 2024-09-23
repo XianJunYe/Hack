@@ -124,6 +124,14 @@ async def process_audio(audio_queue):
                         user: 下面是。
                         Output: true
                         
+                        
+                        **Example 5:**
+                        Conversation:
+                        assistant: 好的，张三先生，您选择了线上面试。接下来，请问您在2024年9月21日和22日有空吗？这两天我们的面试官都有空，您可以选择一个时间段进行面试。
+                        user: 我 22 号的
+                        user: 下午两点到三点有时间
+                        Output: true
+                        
                         **Example 4:**
                         Conversation:
                         assistant: 您好，张三，我是快手公司的HR。请问您更倾向于线上还是线下面试呢？
@@ -134,10 +142,15 @@ async def process_audio(audio_queue):
                         Below is the conversation history:
                         """
 
+
+                        check_prompt_append = ""
                         for talk in talk_history:
-                            check_prompt = check_prompt + "\n" + talk["role"] + ":" + talk["text"]
+                            if talk["role"] == "assistant":
+                                gpt_for_check.clear()
+                                check_prompt_append = ""
+                            check_prompt_append = check_prompt_append + "\n" + talk["role"] + ":" + talk["text"]
                         response = gpt_for_check.chat("system",
-                                                  check_prompt)
+                                                  check_prompt + check_prompt_append)
                         print(response)
 
                         if response.__contains__("true"):

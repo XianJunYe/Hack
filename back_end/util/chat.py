@@ -2,7 +2,7 @@ import requests
 
 
 class GPTChat:
-    def __init__(self, model="gpt-4o", token="E4ywH0oIhzJ9Vf", temperature=0.1):
+    def __init__(self, model="gpt-4-turbo", token="sk-2qufi8q3XB1jsFcQAb67252875024c419fA51fD25e8c4cE5", temperature=0.1):
         self.model = model
         self.token = token
         self.temperature = temperature
@@ -17,7 +17,7 @@ class GPTChat:
 
     def chat(self, role, prompt):
         """与GPT进行对话，记录上下文。"""
-        url = "https://ai-gateway.corp.kuaishou.com/v2/chat/completions"
+        url = "https://api.bltcy.ai/v1/chat/completions"
         headers = {
             "authorization": f"Bearer {self.token}",
             "x-dmo-provider": "openai",
@@ -44,7 +44,9 @@ class GPTChat:
             return reply
         else:
             return f"Error: {response.status_code}, {response.text}"
-
+    def clear(self):
+        """清空对话历史。"""
+        self.messages = []
 
 if __name__ == "__main__":
     gpt_chat = GPTChat()
