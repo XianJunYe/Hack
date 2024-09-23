@@ -169,27 +169,23 @@ startButton.addEventListener('click', async () => {
             statusDiv.textContent = '音频播放完毕';
         };*/
 
-
-        // 创建一个新的 AudioContext
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
+        socket.binaryType = 'arraybuffer';  // 接收二进制数据
+
         socket.onmessage = async (event) => {
-            // 创建并保存 WAV 音频数据块 (Blob)
-            const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+            // 解码音频数据为 AudioBuffer
+            const audioBuffer = await audioContext.decodeAudioData(event.data);
 
-            // 将 Blob 转为 ArrayBuffer 用于解码
-            const arrayBuffer = await audioBlob.arrayBuffer();
-
-            // 解码音频数据并将其转化为 AudioBuffer
-            audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
-                // 播放解码后的音频
-                playAudioBuffer(audioBuffer);
-            }, (error) => {
-                console.error('音频解码失败:', error);
-            });
+            // 播放解码后的音频
+            playAudioBuffer(audioBuffer);
         };
 
-// 播放解码后的音频数据
+        socket.onclose = () => {
+            statusDiv.textContent = '音频流传输结束';
+        };
+
+        // 播放音频数据
         function playAudioBuffer(audioBuffer) {
             const source = audioContext.createBufferSource();
             source.buffer = audioBuffer;
@@ -197,7 +193,6 @@ startButton.addEventListener('click', async () => {
             source.start(0);
 
             source.onended = () => {
-                // 当音频播放结束时，更新状态
                 statusDiv.textContent = '音频播放完毕';
             };
         }
