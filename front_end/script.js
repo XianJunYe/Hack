@@ -196,7 +196,6 @@ startButton.addEventListener('click', async () => {
                 socket.onclose = () => {
                     // 关闭媒体源
                     mediaSource.endOfStream();
-                    statusDiv.textContent = '音频流传输结束';
                 };
             });
         } else {
