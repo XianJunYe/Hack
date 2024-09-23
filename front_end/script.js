@@ -156,14 +156,56 @@ startButton.addEventListener('click', async () => {
             startButton.disabled = true;
             stopButton.disabled = false;
         });
-        socket.onmessage = (event) => {
+
+
+
+
+        /*socket.onmessage = (event) => {
             // 播放接收到的音频数据
             const audioBlob = new Blob([event.data], { type: 'audio/webm' });
             const audioUrl = URL.createObjectURL(audioBlob);
             const audio = new Audio(audioUrl);
             audio.play();
             statusDiv.textContent = '音频播放完毕';
+        };*/
+
+
+        // 创建一个新的 AudioContext
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        socket.onmessage = async (event) => {
+            // 创建并保存 WAV 音频数据块 (Blob)
+            const audioBlob = new Blob([event.data], { type: 'audio/wav' });
+
+            // 将 Blob 转为 ArrayBuffer 用于解码
+            const arrayBuffer = await audioBlob.arrayBuffer();
+
+            // 解码音频数据并将其转化为 AudioBuffer
+            audioContext.decodeAudioData(arrayBuffer, (audioBuffer) => {
+                // 播放解码后的音频
+                playAudioBuffer(audioBuffer);
+            }, (error) => {
+                console.error('音频解码失败:', error);
+            });
         };
+
+// 播放解码后的音频数据
+        function playAudioBuffer(audioBuffer) {
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+
+            source.onended = () => {
+                // 当音频播放结束时，更新状态
+                statusDiv.textContent = '音频播放完毕';
+            };
+        }
+
+
+
+
+
         socket.addEventListener('error', error => {
             console.error('WebSocket 错误:', error);
             statusDiv.textContent = '服务器连接错误，请检查服务器是否运行。';
