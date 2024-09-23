@@ -17,3 +17,14 @@ async def generate_audio(text, connection):
             await connection.send(chunk)
     print("调用 chatgpt 获取音频，耗时： ，", time.time() - start)
     return
+
+
+def generate_audio_without_stream(text, output_path='output.wav'):
+    response = client.audio.speech.create(
+        model="tts-1-hd-1106",
+        voice="fable",
+        input=text,
+        response_format="wav",
+    )
+    response.write_to_file(output_path)
+    return output_path

@@ -12,6 +12,7 @@ import soundfile
 from ppasr.infer_utils.vad_predictor import VADPredictor
 from back_end.util.Audio2Text import WhisperAPI
 from back_end.util.Text2Speech import generate_audio
+from back_end.util.Text2Speech import generate_audio_without_stream
 from back_end.util.chat import GPTChat
 
 # Asyncio queue for audio data
@@ -133,11 +134,11 @@ async def handle_audio_text(save_path):
 
         talk_history.append({"role": "assistant", "text": response})
         await connections["/output"].send("AI:" + response)
-        asyncio.run(generate_audio(response, connections["/"]))
-        # response_file = generate_audio(response, output_path="generated.wav")
-        # with open(response_file, 'rb') as audio_file:
-        #     audio_bytes = audio_file.read()
-        #     await connections["/"].send(audio_bytes)
+        # asyncio.run(generate_audio(response, connections["/"]))
+        response_file = generate_audio_without_stream(response, output_path="generated.wav")
+        with open(response_file, 'rb') as audio_file:
+            audio_bytes = audio_file.read()
+            await connections["/"].send(audio_bytes)
 
         gpt_chat_for_json = GPTChat()
         gpt_chat_for_json.add_message("system",
@@ -172,13 +173,13 @@ async def audio_handler(websocket, path):
         print(response)
         talk_history.append({"role": "assistant", "text": response})
         await connections["/output"].send("AI:" + response)
-        await generate_audio(response, connections["/"])
-        # file_path = generate_audio(response)
-        #
-        # # Send the audio file bytes to the client
-        # with open(file_path, 'rb') as audio_file:
-        #     audio_bytes = audio_file.read()
-        #     await websocket.send(audio_bytes)
+        # await generate_audio(response, connections["/"])
+        file_path = generate_audio_without_stream(response)
+
+        # Send the audio file bytes to the client
+        with open(file_path, 'rb') as audio_file:
+            audio_bytes = audio_file.read()
+            await websocket.send(audio_bytes)
 
         try:
             async for message in websocket:
