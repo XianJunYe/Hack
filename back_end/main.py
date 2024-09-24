@@ -107,6 +107,7 @@ async def handle_audio_text(save_path):
     whisper = WhisperAPI()
     # 翻译音频
     translation_result = whisper.transcribe(save_path)
+    translation_result["text"] = translation_result["text"].replace("面是", "面试")
     print("翻译结果:", translation_result)
     try:  # 如果翻译结果为空，忽略
         talk_history.append({"role": "user", "text": translation_result["text"]})
@@ -142,7 +143,7 @@ async def handle_audio_text(save_path):
 
         gpt_chat_for_json = GPTChat()
         gpt_chat_for_json.add_message("system",
-                                      "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单中包含的问题如下"+json.loads(knowledge_form.get("question")))
+                                      "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单中包含的问题如下"+ json.dumps(knowledge_form.get("question")) + ",当前的时间是：" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
         for talk in talk_history:
             gpt_chat_for_json.add_message(talk["role"], talk["text"])
         response = gpt_chat_for_json.chat("system",
@@ -168,7 +169,7 @@ async def audio_handler(websocket, path):
                                  "你现在作为 快手 公司的 hr AI 助手，现在你正在进行通话，你应该先询问对方是否方便接听电话，"
                                  "然后你可以根据一些基础信息向对方提出一些问题，最终完成所有问题的收集" +
                                  "每次只提问其中的一个问题，这是面试预约相关的背景信息：" + json.dumps(knowledge_form) +
-                                 "下面请你开始与访谈者的第一句话。")
+                                 "当前的时间是：" + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()) + "，下面请你开始与访谈者的第一句话。")
         print(response)
         talk_history.append({"role": "assistant", "text": response})
         await connections["/output"].send("AI:" + response)
