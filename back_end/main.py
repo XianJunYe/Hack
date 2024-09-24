@@ -142,8 +142,7 @@ async def handle_audio_text(save_path):
 
         gpt_chat_for_json = GPTChat()
         gpt_chat_for_json.add_message("system",
-                                      "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单定义如下{"
-                                      "InterviewLocation:（线上?、线下?）,InterviewTime:?}")
+                                      "你是一个信息收集助手，你需要收集对话中的信息并将所有的信息填入表单中，最后以 纯json 的形式返回给我，不需要包含 markdown 标记.表单中包含的问题如下"+json.loads(knowledge_form.get("question")))
         for talk in talk_history:
             gpt_chat_for_json.add_message(talk["role"], talk["text"])
         response = gpt_chat_for_json.chat("system",
