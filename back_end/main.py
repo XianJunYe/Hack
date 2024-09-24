@@ -94,7 +94,7 @@ async def process_audio(audio_queue):
                         last_speech = time.time()
                         soundfile.write(save_path, wav[start: end], sr)
 
-                        asyncio.run(handle_audio_text(save_path))
+                        task = asyncio.create_task(handle_audio_text(save_path))
                         file_counter += 1
                         start, end = 0, 0
     except asyncio.CancelledError as e:
